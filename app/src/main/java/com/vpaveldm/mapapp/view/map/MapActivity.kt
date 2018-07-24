@@ -4,7 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
@@ -21,9 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
 import com.vpaveldm.mapapp.view.graphic.GraphicActivity
@@ -76,7 +77,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
                             .setAction("GRANT") {
                                 moveCamera()
                             }
-                            .show();
+                            .show()
                 } else {
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), LOCATION_ACCESS_KEY)
                 }
@@ -192,9 +193,22 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
                 }
                 val position = LatLng(location.latitude, location.longitude)
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15f))
+                map.addMarker(MarkerOptions()
+                        .position(position)
+                        .icon(bitmapDescriptorFromVector(this, R.drawable.ic_pin)))
             }
         }
     }
+
+    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId) ?: return null
+        vectorDrawable.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
+        val bitmap = Bitmap.createBitmap(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
 }
 
 private const val LOCATION_ACCESS_KEY = 1

@@ -60,8 +60,8 @@
                         <option name="values">
                           <map>
                             <entry key="assetSourceType" value="FILE" />
-                            <entry key="outputName" value="ic_iconapp" />
-                            <entry key="sourceFile" value="G:\iconapp.psd" />
+                            <entry key="outputName" value="ic_pin" />
+                            <entry key="sourceFile" value="E:\pin.svg" />
                           </map>
                         </option>
                       </PersistentState>
