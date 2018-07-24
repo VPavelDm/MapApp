@@ -11,12 +11,20 @@ class MapViewModel : ViewModel(), IMarkerManager {
         errorLiveData.value = message
     }
 
+    override fun changeMarker(marker: Marker) {
+        if (markers.remove(convertGoogleMarker()))
+            markers.add(marker)
+        markerLiveData.value = marker
+    }
+
     override fun addedMarker(marker: Marker): Boolean {
         if (markers.size == 2) return false
         markers.add(marker)
         markerLiveData.value = marker
         return true
     }
+
+    fun convertGoogleMarker() = lastSelectedMarker?.let { Marker(it) }
 
     var lastSelectedMarker: GoogleMarker? = null
     val markers: ArrayList<Marker> = arrayListOf()

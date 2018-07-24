@@ -14,10 +14,15 @@ import com.vpaveldm.mapapp.view.map.MapActivity
 
 interface IMarkerManager {
     fun addedMarker(marker: Marker): Boolean
+    fun changeMarker(marker: Marker)
     fun error(message: String)
 }
 
-class AddMarkerDialog : DialogFragment() {
+enum class WorkMarkerMode {
+    ADD, EDIT
+}
+
+class WorkMarkerDialog : DialogFragment() {
 
     private var listener: IMarkerManager? = null
 
@@ -41,7 +46,12 @@ class AddMarkerDialog : DialogFragment() {
                         try {
                             val latitude = latitudeET.text.toString().toDouble()
                             val longitude = longitudeET.text.toString().toDouble()
-                            listener?.addedMarker(Marker(latitude, longitude))
+                            tag?.let {
+                                when (WorkMarkerMode.valueOf(it)) {
+                                    WorkMarkerMode.ADD -> listener?.addedMarker(Marker(latitude, longitude))
+                                    WorkMarkerMode.EDIT -> listener?.changeMarker(Marker(latitude, longitude))
+                                }
+                            }
                         } catch (e: NumberFormatException) {
                             listener?.error(context!!.getString(R.string.error_input_data))
                         }

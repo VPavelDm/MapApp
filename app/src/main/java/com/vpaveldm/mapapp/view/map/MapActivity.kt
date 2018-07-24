@@ -17,8 +17,9 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
-import com.vpaveldm.mapapp.viewModel.AddMarkerDialog
 import com.vpaveldm.mapapp.viewModel.MapViewModel
+import com.vpaveldm.mapapp.viewModel.WorkMarkerDialog
+import com.vpaveldm.mapapp.viewModel.WorkMarkerMode
 import kotlinx.android.synthetic.main.activity_map.*
 import com.google.android.gms.maps.model.Marker as GoogleMarker
 
@@ -79,14 +80,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_add -> {
-                val dialog = AddMarkerDialog()
-                dialog.show(supportFragmentManager, null)
+                val dialog = WorkMarkerDialog()
+                dialog.show(supportFragmentManager, WorkMarkerMode.ADD.name)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_remove -> {
-                viewModel.lastSelectedMarker?.let { viewModel.markers.remove(Marker(it)) }
+                viewModel.markers.remove(viewModel.convertGoogleMarker())
                 changeBottomView(BottomViewMode.ADD)
                 repaint()
+                return@OnNavigationItemSelectedListener true
+            }
+            R.id.navigation_edit -> {
+                val dialog = WorkMarkerDialog()
+                dialog.show(supportFragmentManager, WorkMarkerMode.EDIT.name)
                 return@OnNavigationItemSelectedListener true
             }
         }
