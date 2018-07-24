@@ -6,6 +6,10 @@ import com.vpaveldm.mapapp.model.Marker
 
 class MapViewModel : ViewModel(), IMarkerManager {
 
+    override fun error(message: String) {
+        errorLiveData.value = message
+    }
+
     override fun addedMarker(marker: Marker): Boolean {
         if (markers.size == 2) return false
         markers.add(marker)
@@ -15,4 +19,5 @@ class MapViewModel : ViewModel(), IMarkerManager {
 
     val markers: ArrayList<Marker> = arrayListOf()
     val markerLiveData: MutableLiveData<Marker> = MutableLiveData()
+    val errorLiveData: MutableLiveData<String> = MutableLiveData()
 }
