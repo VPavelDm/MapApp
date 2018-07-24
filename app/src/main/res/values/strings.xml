@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MapApp</string>
+    <string name="app_name">Интервал</string>
     <string name="add">Добавить</string>
     <string name="edit">Изменить</string>
     <string name="remove">Удалить</string>
