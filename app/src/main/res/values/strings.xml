@@ -8,8 +8,10 @@
     <string name="label_add_marker">Добавить маркер</string>
     <string name="label_add">Добавить</string>
     <string name="error_add_dialog">Context doesn\'t implement IAddMarker</string>
-    <string name="error_add_marker">Две точки уже обозначены</string>
+    <string name="error_add_marker">Ошибка добавления маркера</string>
+    <string name="error_add_marker_limit">Две точки уже обозначены</string>
     <string name="error_input_data">Ошибка ввода данных</string>
     <string name="graphic">График</string>
     <string name="ok">Ок</string>
+    <string name="error_init_map">Проблема инициализации карты</string>
 </resources>
