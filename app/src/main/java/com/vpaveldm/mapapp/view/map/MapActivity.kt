@@ -17,6 +17,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
+import com.vpaveldm.mapapp.view.graphic.GraphicActivity
 import com.vpaveldm.mapapp.viewModel.MapViewModel
 import com.vpaveldm.mapapp.viewModel.WorkMarkerDialog
 import com.vpaveldm.mapapp.viewModel.WorkMarkerMode
@@ -94,6 +95,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
                 val dialog = WorkMarkerDialog()
                 dialog.show(supportFragmentManager, WorkMarkerMode.EDIT.name)
                 return@OnNavigationItemSelectedListener true
+            }
+            R.id.navigation_graphic -> {
+                val intent = GraphicActivity.newIntent(this, viewModel.markers[0], viewModel.markers[1])
+                startActivity(intent)
             }
         }
         false
