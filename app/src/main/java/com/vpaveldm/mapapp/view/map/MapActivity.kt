@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import com.google.android.gms.maps.GoogleMap
@@ -23,8 +24,11 @@ import kotlinx.android.synthetic.main.activity_map.*
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
     override fun onMapLongClick(position: LatLng?) {
-        position?.let { addMarker(it) }
-                ?: Toast.makeText(this, getString(R.string.error_add_marker), LENGTH_LONG).show()
+        position?.let {
+            if (!viewModel.addedMarker(Marker(position)))
+                Toast.makeText(this, getString(R.string.error_add_marker_limit), LENGTH_LONG).show()
+            changeBottomView(BottomViewMode.DEFAULT)
+        } ?: Toast.makeText(this, getString(R.string.error_add_marker), LENGTH_LONG).show()
     }
 
     override fun onMapReady(map: GoogleMap?) {
@@ -38,6 +42,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+        Log.i(com.vpaveldm.mapapp.TAG, "onCreate")
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
@@ -49,11 +54,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
 
     override fun onResume() {
         super.onResume()
-        viewModel.markerLiveData.observe(this, Observer { repaint() })
+        Log.i(com.vpaveldm.mapapp.TAG, "onResume")
+        viewModel.markerLiveData.observe(this, Observer {
+            changeBottomView(BottomViewMode.DEFAULT)
+            repaint()
+        })
+        viewModel.errorLiveData.observe(this, Observer { Toast.makeText(this, it, LENGTH_LONG).show() })
     }
 
     private lateinit var map: GoogleMap
-    private lateinit var viewModel: MapViewModel
+    lateinit var viewModel: MapViewModel
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_add -> {
@@ -82,6 +92,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
     }
 
     private fun repaint() {
+        Log.i(com.vpaveldm.mapapp.TAG, "repaint")
         if (!this::map.isInitialized)
             return
         map.clear()
@@ -102,11 +113,5 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
 
     private enum class BottomViewMode {
         GRAPHIC, EDIT, ADD, DEFAULT
-    }
-
-    private fun addMarker(position: LatLng) {
-        if (!viewModel.addedMarker(Marker(position)))
-            Toast.makeText(this, getString(R.string.error_add_marker_limit), LENGTH_LONG).show()
-        changeBottomView(BottomViewMode.DEFAULT)
     }
 }
