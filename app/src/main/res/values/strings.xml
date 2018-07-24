@@ -1,6 +1,15 @@
 <resources>
     <string name="app_name">MapApp</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="add">Добавить</string>
+    <string name="edit">Изменить</string>
+    <string name="remove">Удалить</string>
+    <string name="latitude">Широта</string>
+    <string name="longitude">Долгота</string>
+    <string name="label_add_marker">Добавить маркер</string>
+    <string name="label_add">Добавить</string>
+    <string name="error_add_dialog">Context doesn\'t implement IAddMarker</string>
+    <string name="error_add_marker">Две точки уже обозначены</string>
+    <string name="error_input_data">Ошибка ввода данных</string>
+    <string name="graphic">График</string>
+    <string name="ok">Ок</string>
 </resources>
