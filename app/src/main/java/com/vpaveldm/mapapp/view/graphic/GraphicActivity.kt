@@ -64,7 +64,7 @@ class GraphicActivity : AppCompatActivity() {
             intent.putExtra("firstMarker", first)
             intent.putExtra("secondMarker", second)
             val samples = calculateDistance(first, second)
-            intent.putExtra("samples", samples)
+            intent.putExtra("samples", 512)
             return intent
         }
     }

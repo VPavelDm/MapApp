@@ -1,14 +1,23 @@
 package com.vpaveldm.mapapp.view.map
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
+import android.support.design.widget.Snackbar
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -59,11 +68,29 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
         Log.i(com.vpaveldm.mapapp.TAG, "onCreate")
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+        myLocationFAB.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    val message = "Требуется доступ к местоположению"
+                    Snackbar.make(container, message, Snackbar.LENGTH_LONG)
+                            .setAction("GRANT") {
+                                moveCamera()
+                            }
+                            .show();
+                } else {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), LOCATION_ACCESS_KEY)
+                }
+            } else {
+                moveCamera()
+            }
+        }
 
         viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
     override fun onResume() {
@@ -76,8 +103,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
         viewModel.errorLiveData.observe(this, Observer { Toast.makeText(this, it, LENGTH_LONG).show() })
     }
 
-    private lateinit var map: GoogleMap
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when (requestCode) {
+            LOCATION_ACCESS_KEY -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED))
+                    moveCamera()
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
     lateinit var viewModel: MapViewModel
+    private lateinit var map: GoogleMap
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_add -> {
@@ -143,4 +181,20 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
     private enum class BottomViewMode {
         GRAPHIC, EDIT, ADD, DEFAULT
     }
+
+    @SuppressLint("MissingPermission")
+    private fun moveCamera() {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            run {
+                if (location == null) {
+                    Toast.makeText(this, "Нет доступа к местоположению", LENGTH_LONG).show()
+                    return@run
+                }
+                val position = LatLng(location.latitude, location.longitude)
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15f))
+            }
+        }
+    }
 }
+
+private const val LOCATION_ACCESS_KEY = 1

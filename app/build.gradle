@@ -33,6 +33,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     //Play services for map
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
+    implementation 'com.google.android.gms:play-services-location:15.0.1'
     //Lifecycle and viewModel
     implementation 'android.arch.lifecycle:extensions:1.1.1'
     //Graphics
