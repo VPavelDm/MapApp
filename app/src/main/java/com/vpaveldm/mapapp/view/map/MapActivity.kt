@@ -20,8 +20,19 @@ import com.vpaveldm.mapapp.model.Marker
 import com.vpaveldm.mapapp.viewModel.AddMarkerDialog
 import com.vpaveldm.mapapp.viewModel.MapViewModel
 import kotlinx.android.synthetic.main.activity_map.*
+import com.google.android.gms.maps.model.Marker as GoogleMarker
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener {
+
+    override fun onMarkerClick(marker: GoogleMarker?): Boolean {
+        if (marker == null)
+            return false
+        if (navigation.menu.size() == 1) {
+            changeBottomView(BottomViewMode.EDIT)
+            viewModel.lastSelectedMarker = marker
+        }
+        return false
+    }
 
     override fun onMapLongClick(position: LatLng?) {
         position?.let {
@@ -35,6 +46,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
         map?.let {
             this.map = it
             this.map.setOnMapLongClickListener(this)
+            this.map.setOnMarkerClickListener(this)
             repaint()
         } ?: Toast.makeText(this, getString(R.string.error_init_map), LENGTH_LONG).show()
     }
@@ -69,6 +81,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
             R.id.navigation_add -> {
                 val dialog = AddMarkerDialog()
                 dialog.show(supportFragmentManager, null)
+                return@OnNavigationItemSelectedListener true
+            }
+            R.id.navigation_remove -> {
+                viewModel.lastSelectedMarker?.let { viewModel.markers.remove(Marker(it)) }
+                changeBottomView(BottomViewMode.ADD)
+                repaint()
                 return@OnNavigationItemSelectedListener true
             }
         }
