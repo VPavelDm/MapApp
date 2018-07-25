@@ -15,6 +15,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
 import com.vpaveldm.mapapp.viewModel.CoordinateViewModel
+import com.vpaveldm.mapapp.viewModel.Factory
 
 class GraphicActivity : AppCompatActivity() {
 
@@ -26,23 +27,19 @@ class GraphicActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_graphic)
         chart = findViewById(R.id.chart_view)
-        viewModel = ViewModelProviders.of(this).get(CoordinateViewModel::class.java)
         val arguments = intent.extras ?: return
-        viewModel.sendRequestForElevates(
-                arguments.getSerializable("firstMarker") as Marker,
-                arguments.getSerializable("secondMarker") as Marker,
-                arguments.getInt("samples")
-        )
+        val first = arguments.getSerializable("firstMarker") as Marker
+        val second = arguments.getSerializable("secondMarker") as Marker
+        viewModel = ViewModelProviders.of(this, Factory(first, second)).get(CoordinateViewModel::class.java)
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.coordinateResult.observe(this, Observer {
             val entities = arrayListOf<Entry>()
-            if (it?.results == null || it.results!!.isEmpty())
+            if (it == null || it.isEmpty())
                 return@Observer
-
-            for ((index, res) in it.results!!.withIndex()) {
+            for ((index, res) in it.withIndex()) {
                 res.elevation?.let {
                     entities += Entry(index.toFloat(), it.toFloat())
                 }
@@ -63,23 +60,7 @@ class GraphicActivity : AppCompatActivity() {
             val intent = Intent(context, GraphicActivity::class.java)
             intent.putExtra("firstMarker", first)
             intent.putExtra("secondMarker", second)
-            val samples = calculateDistance(first, second)
-            intent.putExtra("samples", 512)
             return intent
         }
     }
 }
-
-private fun calculateDistance(first: Marker, second: Marker): Double {
-    val R = 6378137; // Earth’s mean radius in meter
-    val dLat = rad(second.latitude - first.latitude)
-    val dLong = rad(second.longitude - first.longitude)
-    val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(rad(first.latitude)) * Math.cos(rad(second.latitude)) *
-            Math.sin(dLong / 2) * Math.sin(dLong / 2);
-    val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    val d = R * c;
-    return d // returns the distance in meter
-}
-
-private fun rad(x: Double) = x * Math.PI / 180
