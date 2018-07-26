@@ -14,7 +14,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.net.ConnectException
 
-class CoordinateViewModel(val first: Marker, val second: Marker) : ViewModel() {
+class CoordinateViewModel(private val first: Marker, private val second: Marker) : ViewModel() {
 
     init {
         sendRequestForElevates()
@@ -39,7 +39,7 @@ class CoordinateViewModel(val first: Marker, val second: Marker) : ViewModel() {
                 }
             })
         } else {
-            val answer = arrayListOf<Coordinate>()
+            val allCoordinates = arrayListOf<Coordinate>()
             Thread(Runnable {
                 try {
                     val countInterval = d / (DISTANCE_BETWEEN_POINT * 512)
@@ -49,12 +49,32 @@ class CoordinateViewModel(val first: Marker, val second: Marker) : ViewModel() {
                         val s = intervals[i].location
                         if (f == null || s == null)
                             continue
-                        answer.addAll(getCoordinates(Marker(f), Marker(s), 512))
+                        allCoordinates.addAll(getCoordinates(Marker(f), Marker(s), 512))
                     }
                     val f = intervals[intervals.size - 2].location
                     val s = intervals[intervals.size - 1].location
                     if (f != null && s != null)
-                        answer.addAll(getCoordinates(Marker(f), Marker(s), countNotPer512))
+                        allCoordinates.addAll(getCoordinates(Marker(f), Marker(s), countNotPer512))
+                    if (allCoordinates.size == 0) {
+                        coordinateResult.postValue(arrayListOf())
+                        return@Runnable
+                    }
+                    val answer = arrayListOf<Coordinate>()
+                    val first = allCoordinates[0].elevation!!
+                    val second = allCoordinates[1].elevation!!
+                    var signMinus = second - first < 0
+                    var curHeight = allCoordinates[0]
+                    answer.add(curHeight)
+                    for ((index, cor) in allCoordinates.withIndex()) {
+                        if ((signMinus && cor.elevation!! > curHeight.elevation!!) ||
+                                (!signMinus && cor.elevation!! < curHeight.elevation!!)) {
+                            curHeight.distance = index * 7
+                            answer.add(curHeight)
+                            signMinus = !signMinus
+                        }
+                        curHeight = cor
+                    }
+
                     coordinateResult.postValue(answer)
                 } catch (e: ConnectException) {
 
@@ -80,14 +100,14 @@ private fun getCoordinates(first: Marker, second: Marker, samples: Int): List<Co
 }
 
 private fun calculateDistance(first: Marker, second: Marker): Double {
-    val R = 6378137; // Earth’s mean radius in meter
+    val radius = 6378137; // Earth’s mean radius in meter
     val dLat = rad(second.latitude - first.latitude)
     val dLong = rad(second.longitude - first.longitude)
     val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
             Math.cos(rad(first.latitude)) * Math.cos(rad(second.latitude)) *
             Math.sin(dLong / 2) * Math.sin(dLong / 2);
     val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    val d = R * c;
+    val d = radius * c;
     return d // returns the distance in meter
 }
 

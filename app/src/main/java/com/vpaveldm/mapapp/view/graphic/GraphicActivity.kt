@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -27,6 +28,8 @@ class GraphicActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_graphic)
         chart = findViewById(R.id.chart_view)
+        chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        chart.xAxis.setAvoidFirstLastClipping(true)
         val arguments = intent.extras ?: return
         val first = arguments.getSerializable("firstMarker") as Marker
         val second = arguments.getSerializable("secondMarker") as Marker
@@ -39,9 +42,10 @@ class GraphicActivity : AppCompatActivity() {
             val entities = arrayListOf<Entry>()
             if (it == null || it.isEmpty())
                 return@Observer
-            for ((index, res) in it.withIndex()) {
+            for (res in it) {
+                val d = res.distance ?: continue
                 res.elevation?.let {
-                    entities += Entry(index.toFloat(), it.toFloat())
+                    entities += Entry(d.toFloat(), it.toFloat())
                 }
             }
             val set = LineDataSet(entities, "Перепады высот")

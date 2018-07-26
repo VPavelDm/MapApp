@@ -25,6 +25,8 @@ class Coordinate {
     @Expose
     var resolution: Double? = null
 
+    var distance: Int? = null
+
 }
 
 class Location {
