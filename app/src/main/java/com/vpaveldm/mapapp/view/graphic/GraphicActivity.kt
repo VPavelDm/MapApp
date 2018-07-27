@@ -7,18 +7,19 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import android.widget.Toast
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
 import com.vpaveldm.mapapp.viewModel.CoordinateViewModel
 import com.vpaveldm.mapapp.viewModel.Factory
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-
+import kotlinx.android.synthetic.main.activity_graphic.*
 
 
 class GraphicActivity : AppCompatActivity() {
@@ -33,6 +34,7 @@ class GraphicActivity : AppCompatActivity() {
         chart = findViewById(R.id.chart_view)
         chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
         chart.xAxis.setAvoidFirstLastClipping(true)
+        chart.setNoDataText("")
         val arguments = intent.extras ?: return
         val first = arguments.getSerializable("firstMarker") as Marker
         val second = arguments.getSerializable("secondMarker") as Marker
@@ -41,6 +43,7 @@ class GraphicActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        progressBar.visibility = View.VISIBLE
         viewModel.coordinateResult.observe(this, Observer {
             val entities = arrayListOf<Entry>()
             if (it == null || it.isEmpty())
@@ -60,11 +63,10 @@ class GraphicActivity : AppCompatActivity() {
 
             dataSets.add(set)
 
-
             val entities2 = arrayListOf<Entry>()
 
-            entities2.add( Entry(0F,it[0].elevation!!.toFloat() + 30))
-            entities2.add( Entry(it.last().distance!!.toFloat(),it.last().elevation!!.toFloat() + 30))
+            entities2.add(Entry(0F, it[0].elevation!!.toFloat() + 30))
+            entities2.add(Entry(it.last().distance!!.toFloat(), it.last().elevation!!.toFloat() + 30))
 
 
             val set2 = LineDataSet(entities2, "Волна")
@@ -76,6 +78,7 @@ class GraphicActivity : AppCompatActivity() {
             val lineData = LineData(dataSets)
 
             chart.data = lineData
+            progressBar.visibility = View.INVISIBLE
 
             chart.invalidate()
         })

@@ -21,7 +21,6 @@ class CoordinateViewModel(private val first: Marker, private val second: Marker)
     }
 
     private fun sendRequestForElevates() {
-        //TODO progress bar
         val d = calculateDistance(first, second)
         val countPer512 = (d / (DISTANCE_BETWEEN_POINT * 512)).toInt()
         val countNotPer512 = ((d / (DISTANCE_BETWEEN_POINT * 512)) / DISTANCE_BETWEEN_POINT).toInt() + 1
@@ -57,6 +56,10 @@ class CoordinateViewModel(private val first: Marker, private val second: Marker)
                 try {
                     val countInterval = d / (DISTANCE_BETWEEN_POINT * 512)
                     val intervals = getCoordinates(first, second, countInterval.toInt() + 3)
+                    if (intervals.size > 512) {
+                        errorLiveData.postValue("Расстояние между станциями слишком большое")
+                        return@Runnable
+                    }
                     for (i in 1 until intervals.size - 1) {
                         val f = intervals[i - 1].location
                         val s = intervals[i].location
