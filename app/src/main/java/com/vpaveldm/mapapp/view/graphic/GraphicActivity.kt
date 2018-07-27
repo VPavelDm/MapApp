@@ -17,6 +17,9 @@ import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
 import com.vpaveldm.mapapp.viewModel.CoordinateViewModel
 import com.vpaveldm.mapapp.viewModel.Factory
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+
+
 
 class GraphicActivity : AppCompatActivity() {
 
@@ -49,9 +52,31 @@ class GraphicActivity : AppCompatActivity() {
                 }
             }
             val set = LineDataSet(entities, "Перепады высот")
-            set.color = Color.RED
-            val lineData = LineData(set)
+
+            val dataSets = ArrayList<ILineDataSet>()
+            set.color = Color.GREEN
+            set.setDrawFilled(true)
+            set.fillColor = Color.GREEN
+
+            dataSets.add(set)
+
+
+            val entities2 = arrayListOf<Entry>()
+
+            entities2.add( Entry(0F,it[0].elevation!!.toFloat() + 30))
+            entities2.add( Entry(it.last().distance!!.toFloat(),it.last().elevation!!.toFloat() + 30))
+
+
+            val set2 = LineDataSet(entities2, "Волна")
+            set2.color = Color.RED
+            set2.lineWidth = 3f
+
+            dataSets.add(set2)
+
+            val lineData = LineData(dataSets)
+
             chart.data = lineData
+
             chart.invalidate()
         })
         viewModel.errorLiveData.observe(this, Observer {

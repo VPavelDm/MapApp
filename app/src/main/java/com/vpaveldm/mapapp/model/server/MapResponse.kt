@@ -9,6 +9,10 @@ class Result {
     @Expose
     var results: List<Coordinate>? = null
 
+    @SerializedName("status")
+    @Expose
+    var status: String? = null
+
 }
 
 class Coordinate {
@@ -19,7 +23,7 @@ class Coordinate {
 
     @SerializedName("location")
     @Expose
-    var location: Location? = null
+    lateinit var location: Location
 
     @SerializedName("resolution")
     @Expose

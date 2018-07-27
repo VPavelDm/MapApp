@@ -21,21 +21,34 @@ class CoordinateViewModel(private val first: Marker, private val second: Marker)
     }
 
     private fun sendRequestForElevates() {
+        //TODO progress bar
         val d = calculateDistance(first, second)
         val countPer512 = (d / (DISTANCE_BETWEEN_POINT * 512)).toInt()
         val countNotPer512 = ((d / (DISTANCE_BETWEEN_POINT * 512)) / DISTANCE_BETWEEN_POINT).toInt() + 1
         if (countPer512 == 0) {
-            val count = ((d % (DISTANCE_BETWEEN_POINT * 512)) / DISTANCE_BETWEEN_POINT).toInt() + 2 + 1
+            val count = (d / DISTANCE_BETWEEN_POINT).toInt() + 3
             val requestStr = "${first.latitude},${first.longitude}|${second.latitude}, ${second.longitude}"
             val request = Application.getMapService().getCoordinates(requestStr, count)
             request.enqueue(object : Callback<Result> {
                 override fun onResponse(call: Call<Result>, response: Response<Result>) {
                     Log.i(TAG, response.body()?.results?.size.toString())
-                    response.body()?.let { coordinateResult.value = it.results }
+                    if (response.isSuccessful) {
+                        val result = response.body()
+                        if (result?.results == null) {
+                            errorLiveData.value = "Ошибка запроса... Повторите позже"
+                            return
+                        }
+                        for ((index, i) in result.results!!.withIndex()) {
+                            i.distance = index * 7
+                        }
+                        coordinateResult.value = result.results
+                    } else if (response.body()?.status == "OVER_QUERY_LIMIT") {
+                        errorLiveData.value = "На текущий момент количество запросов исчерпано"
+                    }
                 }
 
                 override fun onFailure(call: Call<Result>, t: Throwable) {
-                    errorLiveData.value = t.message
+                    errorLiveData.value = REQUEST_ERROR
                 }
             })
         } else {
@@ -44,22 +57,20 @@ class CoordinateViewModel(private val first: Marker, private val second: Marker)
                 try {
                     val countInterval = d / (DISTANCE_BETWEEN_POINT * 512)
                     val intervals = getCoordinates(first, second, countInterval.toInt() + 3)
-                    for (i in 1 until intervals.size) {
+                    for (i in 1 until intervals.size - 1) {
                         val f = intervals[i - 1].location
                         val s = intervals[i].location
-                        if (f == null || s == null)
-                            continue
                         allCoordinates.addAll(getCoordinates(Marker(f), Marker(s), 512))
                     }
                     val f = intervals[intervals.size - 2].location
                     val s = intervals[intervals.size - 1].location
-                    if (f != null && s != null)
-                        allCoordinates.addAll(getCoordinates(Marker(f), Marker(s), countNotPer512))
+                    allCoordinates.addAll(getCoordinates(Marker(f), Marker(s), countNotPer512))
                     if (allCoordinates.size == 0) {
                         coordinateResult.postValue(arrayListOf())
                         return@Runnable
                     }
                     val answer = arrayListOf<Coordinate>()
+                    allCoordinates[0].distance = 0
                     val first = allCoordinates[0].elevation!!
                     val second = allCoordinates[1].elevation!!
                     var signMinus = second - first < 0
@@ -77,7 +88,7 @@ class CoordinateViewModel(private val first: Marker, private val second: Marker)
 
                     coordinateResult.postValue(answer)
                 } catch (e: ConnectException) {
-
+                    errorLiveData.postValue(e.message)
                 }
             }).start()
         }
@@ -95,8 +106,12 @@ class Factory(val first: Marker, val second: Marker) : ViewModelProvider.NewInst
 private fun getCoordinates(first: Marker, second: Marker, samples: Int): List<Coordinate> {
     val requestStr = "${first.latitude},${first.longitude}|${second.latitude}, ${second.longitude}"
     val request = Application.getMapService().getCoordinates(requestStr, samples)
-    val result = request.execute().body() ?: throw ConnectException("Some")
-    return result.results ?: throw ConnectException("Some")
+    val response = request.execute()
+    if (!response.isSuccessful) {
+        throw ConnectException(REQUEST_ERROR)
+    }
+    val result = response.body() ?: throw ConnectException(REQUEST_ERROR)
+    return result.results ?: throw ConnectException(REQUEST_ERROR)
 }
 
 private fun calculateDistance(first: Marker, second: Marker): Double {
@@ -112,4 +127,6 @@ private fun calculateDistance(first: Marker, second: Marker): Double {
 }
 
 private fun rad(x: Double) = x * Math.PI / 180
+
 private const val DISTANCE_BETWEEN_POINT = 7
+private const val REQUEST_ERROR = "Ошибка получения высот... Проверьте соединение с интернетом"

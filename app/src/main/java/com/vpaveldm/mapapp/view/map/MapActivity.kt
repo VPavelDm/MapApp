@@ -59,8 +59,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
             this.map = it
             this.map.setOnMapLongClickListener(this)
             this.map.setOnMarkerClickListener(this)
+            this.map.mapType = GoogleMap.MAP_TYPE_HYBRID
             repaint()
         } ?: Toast.makeText(this, getString(R.string.error_init_map), LENGTH_LONG).show()
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,9 +91,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
         viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+
         mapFragment.getMapAsync(this)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
     }
 
     override fun onResume() {
