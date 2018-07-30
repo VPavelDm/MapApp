@@ -1,4 +1,4 @@
-package com.vpaveldm.mapapp.viewModel
+package com.vpaveldm.mapapp.view.map
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
-import com.vpaveldm.mapapp.view.map.MapActivity
 
 interface IMarkerManager {
     fun addedMarker(marker: Marker): Boolean

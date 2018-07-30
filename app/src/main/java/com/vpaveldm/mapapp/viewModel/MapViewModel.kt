@@ -3,6 +3,7 @@ package com.vpaveldm.mapapp.viewModel
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import com.vpaveldm.mapapp.model.Marker
+import com.vpaveldm.mapapp.view.map.IMarkerManager
 import com.google.android.gms.maps.model.Marker as GoogleMarker
 
 class MapViewModel : ViewModel(), IMarkerManager {

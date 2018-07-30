@@ -29,12 +29,21 @@ import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
 import com.vpaveldm.mapapp.view.graphic.GraphicActivity
 import com.vpaveldm.mapapp.viewModel.MapViewModel
-import com.vpaveldm.mapapp.viewModel.WorkMarkerDialog
-import com.vpaveldm.mapapp.viewModel.WorkMarkerMode
 import kotlinx.android.synthetic.main.activity_map.*
 import com.google.android.gms.maps.model.Marker as GoogleMarker
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener, IMapTypeManager {
+    override fun mapSelected(type: MapType) {
+        when (type) {
+            MapType.TERRAIN -> map.mapType = GoogleMap.MAP_TYPE_TERRAIN
+            MapType.SATELLITE -> map.mapType = GoogleMap.MAP_TYPE_SATELLITE
+            MapType.MAP -> map.mapType = GoogleMap.MAP_TYPE_NORMAL
+        }
+    }
+
+    override fun onMapClick(p0: LatLng?) {
+        changeBottomView(BottomViewMode.DEFAULT)
+    }
 
     override fun onMarkerClick(marker: GoogleMarker?): Boolean {
         if (marker == null)
@@ -59,6 +68,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
             this.map = it
             this.map.setOnMapLongClickListener(this)
             this.map.setOnMarkerClickListener(this)
+            this.map.setOnMapClickListener(this)
             this.map.mapType = GoogleMap.MAP_TYPE_HYBRID
             repaint()
         } ?: Toast.makeText(this, getString(R.string.error_init_map), LENGTH_LONG).show()
@@ -72,8 +82,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
         myLocationFAB.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                     val message = "Требуется доступ к местоположению"
                     Snackbar.make(container, message, Snackbar.LENGTH_LONG)
                             .setAction("GRANT") {
@@ -81,11 +91,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLong
                             }
                             .show()
                 } else {
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), LOCATION_ACCESS_KEY)
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_ACCESS_KEY)
                 }
             } else {
                 moveCamera()
             }
+        }
+        mapTypeFAB.setOnClickListener {
+            val dialog = MapTypeDialog()
+            dialog.show(supportFragmentManager, null)
         }
 
         viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)

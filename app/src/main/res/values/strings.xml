@@ -14,4 +14,8 @@
     <string name="graphic">График</string>
     <string name="ok">Ок</string>
     <string name="error_init_map">Проблема инициализации карты</string>
+    <string name="map_type">Выберите тип карты</string>
+    <string name="label_terrain">Рельеф</string>
+    <string name="label_satellite">Спутник</string>
+    <string name="label_map">Карта</string>
 </resources>
