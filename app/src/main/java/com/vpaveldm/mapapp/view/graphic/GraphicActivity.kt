@@ -17,6 +17,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
+import com.vpaveldm.mapapp.model.server.Coordinate
 import com.vpaveldm.mapapp.viewModel.CoordinateViewModel
 import com.vpaveldm.mapapp.viewModel.Factory
 import kotlinx.android.synthetic.main.activity_graphic.*
@@ -24,7 +25,7 @@ import kotlinx.android.synthetic.main.activity_graphic.*
 
 class GraphicActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: CoordinateViewModel
+    lateinit var viewModel: CoordinateViewModel
 
     private lateinit var chart: LineChart
 
@@ -39,12 +40,33 @@ class GraphicActivity : AppCompatActivity() {
         val first = arguments.getSerializable("firstMarker") as Marker
         val second = arguments.getSerializable("secondMarker") as Marker
         viewModel = ViewModelProviders.of(this, Factory(first, second)).get(CoordinateViewModel::class.java)
+
+        stationHeight.setOnClickListener {
+            val dialog = StationHeightDialog()
+            dialog.show(supportFragmentManager, null)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         progressBar.visibility = View.VISIBLE
-        viewModel.coordinateResult.observe(this, Observer {
+        viewModel.coordinateResult.observe(this, createObserver())
+        viewModel.errorLiveData.observe(this, Observer {
+            it?.let { Toast.makeText(this, it, Toast.LENGTH_LONG).show() }
+        })
+    }
+
+    companion object {
+        fun newIntent(context: Context, first: Marker, second: Marker): Intent {
+            val intent = Intent(context, GraphicActivity::class.java)
+            intent.putExtra("firstMarker", first)
+            intent.putExtra("secondMarker", second)
+            return intent
+        }
+    }
+
+    private fun createObserver(): Observer<List<Coordinate>> {
+        return Observer {
             val entities = arrayListOf<Entry>()
             if (it == null || it.isEmpty())
                 return@Observer
@@ -65,9 +87,8 @@ class GraphicActivity : AppCompatActivity() {
 
             val entities2 = arrayListOf<Entry>()
 
-            entities2.add(Entry(0F, it[0].elevation!!.toFloat() + 30))
-            entities2.add(Entry(it.last().distance!!.toFloat(), it.last().elevation!!.toFloat() + 30))
-
+            entities2.add(Entry(0F, it[0].elevation!!.toFloat() + viewModel.firstHeight))
+            entities2.add(Entry(it.last().distance!!.toFloat(), it.last().elevation!!.toFloat() + viewModel.secondHeight))
 
             val set2 = LineDataSet(entities2, "Волна")
             set2.color = Color.RED
@@ -81,18 +102,6 @@ class GraphicActivity : AppCompatActivity() {
             progressBar.visibility = View.INVISIBLE
 
             chart.invalidate()
-        })
-        viewModel.errorLiveData.observe(this, Observer {
-            it?.let { Toast.makeText(this, it, Toast.LENGTH_LONG).show() }
-        })
-    }
-
-    companion object {
-        fun newIntent(context: Context, first: Marker, second: Marker): Intent {
-            val intent = Intent(context, GraphicActivity::class.java)
-            intent.putExtra("firstMarker", first)
-            intent.putExtra("secondMarker", second)
-            return intent
         }
     }
 }

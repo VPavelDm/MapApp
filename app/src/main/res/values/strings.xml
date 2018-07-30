@@ -15,7 +15,11 @@
     <string name="ok">Ок</string>
     <string name="error_init_map">Проблема инициализации карты</string>
     <string name="map_type">Выберите тип карты</string>
+    <string name="station_height">Выберите высоту станций</string>
     <string name="label_terrain">Рельеф</string>
     <string name="label_satellite">Спутник</string>
     <string name="label_map">Карта</string>
+    <string name="first_station_height">Высота перевой станции</string>
+    <string name="second_station_height">Высота второй станции</string>
+    <string name="change">Изменить</string>
 </resources>

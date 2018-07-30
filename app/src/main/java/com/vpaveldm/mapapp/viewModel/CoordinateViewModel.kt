@@ -9,12 +9,23 @@ import com.vpaveldm.mapapp.TAG
 import com.vpaveldm.mapapp.model.Marker
 import com.vpaveldm.mapapp.model.server.Coordinate
 import com.vpaveldm.mapapp.model.server.Result
+import com.vpaveldm.mapapp.view.graphic.IStationHeightManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.net.ConnectException
 
-class CoordinateViewModel(private val first: Marker, private val second: Marker) : ViewModel() {
+class CoordinateViewModel(private val first: Marker, private val second: Marker) : ViewModel(), IStationHeightManager {
+
+    override fun error(message: String) {
+        errorLiveData.value = message
+    }
+
+    override fun heightChanged(firstHeight: Int, secondHeight: Int) {
+        this.firstHeight = firstHeight
+        this.secondHeight = secondHeight
+        coordinateResult.value = coordinateResult.value
+    }
 
     init {
         sendRequestForElevates()
@@ -99,6 +110,8 @@ class CoordinateViewModel(private val first: Marker, private val second: Marker)
 
     val coordinateResult: MutableLiveData<List<Coordinate>> = MutableLiveData()
     val errorLiveData = MutableLiveData<String>()
+    var firstHeight = 20
+    var secondHeight = 20
 }
 
 class Factory(val first: Marker, val second: Marker) : ViewModelProvider.NewInstanceFactory() {

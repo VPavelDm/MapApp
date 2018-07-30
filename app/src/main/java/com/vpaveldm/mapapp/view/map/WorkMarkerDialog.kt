@@ -7,9 +7,9 @@ import android.support.v4.app.DialogFragment
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
-import android.widget.EditText
 import com.vpaveldm.mapapp.R
 import com.vpaveldm.mapapp.model.Marker
+import kotlinx.android.synthetic.main.add_marker_view.view.*
 
 interface IMarkerManager {
     fun addedMarker(marker: Marker): Boolean
@@ -35,8 +35,8 @@ class WorkMarkerDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         Log.i(com.vpaveldm.mapapp.TAG, "dialog: onCreateDialog")
         val view = LayoutInflater.from(context!!).inflate(R.layout.add_marker_view, null)
-        val latitudeET = view.findViewById<EditText>(R.id.latitudeET)
-        val longitudeET = view.findViewById<EditText>(R.id.longitudeET)
+        val latitudeET = view.latitudeET
+        val longitudeET = view.longitudeET
         val builder = AlertDialog.Builder(context!!)
         builder.setTitle(context!!.getString(R.string.label_add_marker))
                 .setView(view)
